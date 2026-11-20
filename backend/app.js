@@ -5,6 +5,29 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const cors = require("cors");
 const helmet = require("helmet");
+const winston = require('winston');
+// Create a logger
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.json(),
+    defaultMeta: { service: 'user-service' },
+    transports: [
+        // Write logs to a file
+        new winston.transports.File({ filename: 'error.log', level: 'error' }),
+        new winston.transports.File({ filename: 'combined.log' }),
+    ],
+});
+
+// If not in production, also log to the console
+if (process.env.NODE_ENV !== 'production') {
+    logger.add(new winston.transports.Console({
+        format: winston.format.simple(),
+    }));
+}
+// Usage
+logger.log('info', 'Hello distributed log files!');
+logger.info('Hello again distributed logs');
+logger.error('Something went wrong', { additionalInfo: 'error details' });
 
 const { globalLimiter, authLimiter } = require("./middleware/rate_limiter");
 const authRoute = require("./routes/authRoute");
